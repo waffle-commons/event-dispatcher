@@ -23,12 +23,14 @@ final class ListenerProvider implements ListenerProviderInterface
      */
     public function addListener(string $eventClass, callable $listener, int $priority = 0): void
     {
+        // @mago-ignore lint:no-isset
         if (!isset($this->listeners[$eventClass])) {
             $this->listeners[$eventClass] = [];
         }
 
         $this->listeners[$eventClass][] = [$priority, $listener];
 
+        // @mago-ignore analysis:possibly-undefined-int-array-index,possibly-undefined-int-array-index
         usort($this->listeners[$eventClass], static fn(array $a, array $b): int => $b[0] <=> $a[0]);
     }
 
@@ -93,10 +95,12 @@ final class ListenerProvider implements ListenerProviderInterface
         }
 
         foreach ($classes as $eventClass) {
+            // @mago-ignore lint:no-isset
             if (!isset($this->listeners[$eventClass])) {
                 continue;
             }
 
+            // @mago-ignore analysis:possibly-undefined-string-array-index
             foreach ($this->listeners[$eventClass] as $entry) {
                 yield $entry[1];
             }
@@ -114,7 +118,8 @@ final class ListenerProvider implements ListenerProviderInterface
             return null;
         }
 
-        $type = $params[0]->getType();
+        // @mago-ignore analysis:possibly-undefined-int-array-index
+        $type = $params[0]?->getType();
 
         if (!$type instanceof \ReflectionNamedType || $type->isBuiltin()) {
             return null;
