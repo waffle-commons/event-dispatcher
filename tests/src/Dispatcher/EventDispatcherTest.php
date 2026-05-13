@@ -6,6 +6,7 @@ namespace WaffleTests\Commons\EventDispatcher;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
+use Waffle\Commons\EventDispatcher\Event\AbstractStoppableEvent;
 use Waffle\Commons\EventDispatcher\Provider\ListenerProvider;
 use WaffleTests\Commons\EventDispatcher\Helper\TestStoppableEvent;
 
@@ -89,6 +90,7 @@ final class EventDispatcherTest extends AbstractTestCase
             TestStoppableEvent::class,
             static function ($e) use (&$executionOrder): void {
                 $executionOrder[] = 'first';
+                /** @var AbstractStoppableEvent $e */
                 $e->stopPropagation();
             },
             priority: 10,

@@ -10,27 +10,24 @@ use Waffle\Commons\EventDispatcher\Attribute\AsEventListener;
 final class ListenerProvider implements ListenerProviderInterface
 {
     /**
-     * @var array<string, array<int, callable>>
+     * @var array<string, list<array{0: int, 1: callable}>>
      */
     private array $listeners = [];
 
     /**
      * Registers a listener for a given event.
      *
-     * @param class-string<object> $eventClass The fully qualified class name of the event.
+     * @param string $eventClass The fully qualified class name of the event.
      * @param callable $listener The callable to invoke when the event is dispatched.
      * @param int $priority Higher priority listeners are executed first.
      */
     public function addListener(string $eventClass, callable $listener, int $priority = 0): void
     {
-        // @mago-ignore lint:no-isset
-        if (!isset($this->listeners[$eventClass])) {
+        if (!array_key_exists($eventClass, $this->listeners)) {
             $this->listeners[$eventClass] = [];
         }
 
         $this->listeners[$eventClass][] = [$priority, $listener];
-
-        // @mago-ignore analysis:possibly-undefined-int-array-index,possibly-undefined-int-array-index
         usort($this->listeners[$eventClass], static fn(array $a, array $b): int => $b[0] <=> $a[0]);
     }
 
@@ -44,7 +41,6 @@ final class ListenerProvider implements ListenerProviderInterface
         // Check class-level attributes
         $classAttributes = $reflection->getAttributes(AsEventListener::class);
         foreach ($classAttributes as $attribute) {
-            /** @var AsEventListener $instance */
             $instance = $attribute->newInstance();
 
             $eventClass = $instance->event;
@@ -68,7 +64,6 @@ final class ListenerProvider implements ListenerProviderInterface
             $attributes = $method->getAttributes(AsEventListener::class);
 
             foreach ($attributes as $attribute) {
-                /** @var AsEventListener $instance */
                 $instance = $attribute->newInstance();
 
                 $eventClass = $instance->event;
@@ -78,12 +73,17 @@ final class ListenerProvider implements ListenerProviderInterface
                 }
 
                 if ($eventClass !== null) {
-                    $this->addListener($eventClass, [$listener, $method->getName()], $instance->priority);
+                    // Create a callable from the object and method name
+                    $callable = [$listener, $method->getName()];
+                    $this->addListener($eventClass, $callable, $instance->priority);
                 }
             }
         }
     }
 
+    /**
+     * Gets all listeners for the given event.
+     */
     #[\Override]
     public function getListenersForEvent(object $event): iterable
     {
@@ -95,14 +95,12 @@ final class ListenerProvider implements ListenerProviderInterface
         }
 
         foreach ($classes as $eventClass) {
-            // @mago-ignore lint:no-isset
-            if (!isset($this->listeners[$eventClass])) {
+            if (!array_key_exists($eventClass, $this->listeners)) {
                 continue;
             }
 
-            // @mago-ignore analysis:possibly-undefined-string-array-index
-            foreach ($this->listeners[$eventClass] as $entry) {
-                yield $entry[1];
+            foreach ($this->listeners[$eventClass] as $listenerPair) {
+                yield $listenerPair[1];
             }
         }
     }
@@ -118,7 +116,6 @@ final class ListenerProvider implements ListenerProviderInterface
             return null;
         }
 
-        // @mago-ignore analysis:possibly-undefined-int-array-index
         $type = $params[0]?->getType();
 
         if (!$type instanceof \ReflectionNamedType || $type->isBuiltin()) {
