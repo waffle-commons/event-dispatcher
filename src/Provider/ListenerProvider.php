@@ -54,7 +54,9 @@ final class ListenerProvider implements ListenerProviderInterface
                 if ($method->getName() === '__construct') {
                     continue;
                 }
-                $this->addListener($eventClass, [$listener, $method->getName()], $instance->priority);
+                /** @var callable $classCallable */
+                $classCallable = [$listener, $method->getName()];
+                $this->addListener($eventClass, $classCallable, $instance->priority);
                 break;
             }
         }
@@ -74,6 +76,7 @@ final class ListenerProvider implements ListenerProviderInterface
 
                 if ($eventClass !== null) {
                     // Create a callable from the object and method name
+                    /** @var callable $callable */
                     $callable = [$listener, $method->getName()];
                     $this->addListener($eventClass, $callable, $instance->priority);
                 }
@@ -83,6 +86,8 @@ final class ListenerProvider implements ListenerProviderInterface
 
     /**
      * Gets all listeners for the given event.
+     *
+     * @return \Generator<int, callable, null>
      */
     #[\Override]
     public function getListenersForEvent(object $event): iterable
@@ -99,7 +104,7 @@ final class ListenerProvider implements ListenerProviderInterface
                 continue;
             }
 
-            foreach ($this->listeners[$eventClass] as $listenerPair) {
+            foreach ($this->listeners[$eventClass] ?? [] as $listenerPair) {
                 yield $listenerPair[1];
             }
         }
@@ -116,7 +121,7 @@ final class ListenerProvider implements ListenerProviderInterface
             return null;
         }
 
-        $type = $params[0]?->getType();
+        $type = ($params[0] ?? null)?->getType();
 
         if (!$type instanceof \ReflectionNamedType || $type->isBuiltin()) {
             return null;

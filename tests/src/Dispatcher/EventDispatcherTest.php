@@ -157,6 +157,7 @@ final class EventDispatcherTest extends AbstractTestCase
 
         $result = $dispatcher->dispatch($event);
 
+        // @mago-ignore analysis:ambiguous-object-property-access
         static::assertSame('modified', $result->value);
     }
 
@@ -175,6 +176,7 @@ final class EventDispatcherTest extends AbstractTestCase
         }
 
         // Provider should not have accumulated any state from dispatched events
+        /** @var callable[] $listeners */
         $listeners = iterator_to_array($provider->getListenersForEvent(new \stdClass()));
         static::assertCount(1, $listeners);
     }

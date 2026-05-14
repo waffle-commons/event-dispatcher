@@ -24,20 +24,25 @@ final class ListenerProviderTest extends AbstractTestCase
         $provider->addListener(\stdClass::class, static fn() => 'b', priority: 10);
         $provider->addListener(\stdClass::class, static fn() => 'c', priority: 5);
 
+        /** @var callable[] $listeners */
         $listeners = iterator_to_array($provider->getListenersForEvent(new \stdClass()));
 
         static::assertCount(3, $listeners);
         // @mago-ignore analysis:possibly-undefined-int-array-index
+        // @mago-ignore analysis:invalid-callable
         static::assertSame('b', $listeners[0]());
         // @mago-ignore analysis:possibly-undefined-int-array-index
+        // @mago-ignore analysis:invalid-callable
         static::assertSame('c', $listeners[1]());
         // @mago-ignore analysis:possibly-undefined-int-array-index
+        // @mago-ignore analysis:invalid-callable
         static::assertSame('a', $listeners[2]());
     }
 
     public function testGetListenersForEventReturnsEmptyForUnknownEvent(): void
     {
         $provider = new ListenerProvider();
+        /** @var callable[] $listeners */
         $listeners = iterator_to_array($provider->getListenersForEvent(new \stdClass()));
 
         static::assertSame([], $listeners);
@@ -50,6 +55,7 @@ final class ListenerProviderTest extends AbstractTestCase
 
         $provider->register($listener);
 
+        /** @var callable[] $listeners */
         $listeners = iterator_to_array($provider->getListenersForEvent(new TestStoppableEvent()));
 
         static::assertCount(1, $listeners);
@@ -62,6 +68,7 @@ final class ListenerProviderTest extends AbstractTestCase
 
         $provider->register($listener);
 
+        /** @var callable[] $listeners */
         $listeners = iterator_to_array($provider->getListenersForEvent(new TestStoppableEvent()));
 
         static::assertCount(1, $listeners);
