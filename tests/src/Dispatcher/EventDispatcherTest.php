@@ -6,6 +6,7 @@ namespace WaffleTests\Commons\EventDispatcher;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Waffle\Commons\EventDispatcher\Dispatcher\EventDispatcher;
+use Waffle\Commons\EventDispatcher\Event\AbstractStoppableEvent;
 use Waffle\Commons\EventDispatcher\Provider\ListenerProvider;
 use WaffleTests\Commons\EventDispatcher\Helper\TestStoppableEvent;
 
@@ -21,7 +22,7 @@ final class EventDispatcherTest extends AbstractTestCase
         $event = new \stdClass();
         $result = $dispatcher->dispatch($event);
 
-        $this->assertSame($event, $result);
+        static::assertSame($event, $result);
     }
 
     public function testDispatchInvokesListener(): void
@@ -38,7 +39,7 @@ final class EventDispatcherTest extends AbstractTestCase
 
         $dispatcher->dispatch($event);
 
-        $this->assertTrue($called);
+        static::assertTrue($called);
     }
 
     public function testDispatchRespectsPriorityOrder(): void
@@ -74,7 +75,7 @@ final class EventDispatcherTest extends AbstractTestCase
 
         $dispatcher->dispatch(new \stdClass());
 
-        $this->assertSame(['high', 'medium', 'low'], $executionOrder);
+        static::assertSame(['high', 'medium', 'low'], $executionOrder);
     }
 
     public function testStoppableEventHaltsPropagation(): void
@@ -89,6 +90,7 @@ final class EventDispatcherTest extends AbstractTestCase
             TestStoppableEvent::class,
             static function ($e) use (&$executionOrder): void {
                 $executionOrder[] = 'first';
+                /** @var AbstractStoppableEvent $e */
                 $e->stopPropagation();
             },
             priority: 10,
@@ -112,8 +114,8 @@ final class EventDispatcherTest extends AbstractTestCase
 
         $dispatcher->dispatch($event);
 
-        $this->assertSame(['first'], $executionOrder);
-        $this->assertTrue($event->isPropagationStopped());
+        static::assertSame(['first'], $executionOrder);
+        static::assertTrue($event->isPropagationStopped());
     }
 
     public function testMultipleListenersForSameEvent(): void
@@ -137,7 +139,7 @@ final class EventDispatcherTest extends AbstractTestCase
 
         $dispatcher->dispatch(new \stdClass());
 
-        $this->assertSame(3, $count);
+        static::assertSame(3, $count);
     }
 
     public function testListenerCanMutateEvent(): void
@@ -155,7 +157,8 @@ final class EventDispatcherTest extends AbstractTestCase
 
         $result = $dispatcher->dispatch($event);
 
-        $this->assertSame('modified', $result->value);
+        // @mago-ignore analysis:ambiguous-object-property-access
+        static::assertSame('modified', $result->value);
     }
 
     public function testDispatcherIsWorkerSafeNoMemoryLeak(): void
@@ -173,8 +176,9 @@ final class EventDispatcherTest extends AbstractTestCase
         }
 
         // Provider should not have accumulated any state from dispatched events
+        /** @var callable[] $listeners */
         $listeners = iterator_to_array($provider->getListenersForEvent(new \stdClass()));
-        $this->assertCount(1, $listeners);
+        static::assertCount(1, $listeners);
     }
 
     public function testDifferentEventTypesAreIsolated(): void
@@ -195,7 +199,7 @@ final class EventDispatcherTest extends AbstractTestCase
 
         $dispatcher->dispatch(new \stdClass());
 
-        $this->assertTrue($eventACalled);
-        $this->assertFalse($eventBCalled);
+        static::assertTrue($eventACalled);
+        static::assertFalse($eventBCalled);
     }
 }

@@ -10,25 +10,24 @@ use Waffle\Commons\EventDispatcher\Attribute\AsEventListener;
 final class ListenerProvider implements ListenerProviderInterface
 {
     /**
-     * @var array<string, array<int, callable>>
+     * @var array<string, list<array{0: int, 1: callable}>>
      */
     private array $listeners = [];
 
     /**
      * Registers a listener for a given event.
      *
-     * @param class-string<object> $eventClass The fully qualified class name of the event.
+     * @param string $eventClass The fully qualified class name of the event.
      * @param callable $listener The callable to invoke when the event is dispatched.
      * @param int $priority Higher priority listeners are executed first.
      */
     public function addListener(string $eventClass, callable $listener, int $priority = 0): void
     {
-        if (!isset($this->listeners[$eventClass])) {
+        if (!array_key_exists($eventClass, $this->listeners)) {
             $this->listeners[$eventClass] = [];
         }
 
         $this->listeners[$eventClass][] = [$priority, $listener];
-
         usort($this->listeners[$eventClass], static fn(array $a, array $b): int => $b[0] <=> $a[0]);
     }
 
@@ -42,7 +41,6 @@ final class ListenerProvider implements ListenerProviderInterface
         // Check class-level attributes
         $classAttributes = $reflection->getAttributes(AsEventListener::class);
         foreach ($classAttributes as $attribute) {
-            /** @var AsEventListener $instance */
             $instance = $attribute->newInstance();
 
             $eventClass = $instance->event;
@@ -56,7 +54,9 @@ final class ListenerProvider implements ListenerProviderInterface
                 if ($method->getName() === '__construct') {
                     continue;
                 }
-                $this->addListener($eventClass, [$listener, $method->getName()], $instance->priority);
+                /** @var callable $classCallable */
+                $classCallable = [$listener, $method->getName()];
+                $this->addListener($eventClass, $classCallable, $instance->priority);
                 break;
             }
         }
@@ -66,7 +66,6 @@ final class ListenerProvider implements ListenerProviderInterface
             $attributes = $method->getAttributes(AsEventListener::class);
 
             foreach ($attributes as $attribute) {
-                /** @var AsEventListener $instance */
                 $instance = $attribute->newInstance();
 
                 $eventClass = $instance->event;
@@ -76,12 +75,20 @@ final class ListenerProvider implements ListenerProviderInterface
                 }
 
                 if ($eventClass !== null) {
-                    $this->addListener($eventClass, [$listener, $method->getName()], $instance->priority);
+                    // Create a callable from the object and method name
+                    /** @var callable $callable */
+                    $callable = [$listener, $method->getName()];
+                    $this->addListener($eventClass, $callable, $instance->priority);
                 }
             }
         }
     }
 
+    /**
+     * Gets all listeners for the given event.
+     *
+     * @return \Generator<int, callable, null>
+     */
     #[\Override]
     public function getListenersForEvent(object $event): iterable
     {
@@ -93,12 +100,12 @@ final class ListenerProvider implements ListenerProviderInterface
         }
 
         foreach ($classes as $eventClass) {
-            if (!isset($this->listeners[$eventClass])) {
+            if (!array_key_exists($eventClass, $this->listeners)) {
                 continue;
             }
 
-            foreach ($this->listeners[$eventClass] as $entry) {
-                yield $entry[1];
+            foreach ($this->listeners[$eventClass] ?? [] as $listenerPair) {
+                yield $listenerPair[1];
             }
         }
     }
@@ -114,7 +121,7 @@ final class ListenerProvider implements ListenerProviderInterface
             return null;
         }
 
-        $type = $params[0]->getType();
+        $type = ($params[0] ?? null)?->getType();
 
         if (!$type instanceof \ReflectionNamedType || $type->isBuiltin()) {
             return null;

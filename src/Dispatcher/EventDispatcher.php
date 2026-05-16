@@ -20,7 +20,9 @@ final readonly class EventDispatcher implements EventDispatcherInterface
     #[\Override]
     public function dispatch(object $event): object
     {
+        // @mago-ignore analysis:invalid-iterator,mixed-assignment
         foreach ($this->listenerProvider->getListenersForEvent($event) as $listener) {
+            // @mago-ignore analysis:invalid-callable
             $listener($event);
 
             if ($event instanceof StoppableEventInterface && $event->isPropagationStopped()) {
