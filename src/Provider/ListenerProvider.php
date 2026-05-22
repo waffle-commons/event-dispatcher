@@ -87,9 +87,10 @@ final class ListenerProvider implements ListenerProviderInterface
     /**
      * Gets all listeners for the given event.
      *
-     * @return \Generator<int, callable, null>
+     * @return list<callable>
      */
     #[\Override]
+    // @mago-ignore analysis:incompatible-return-type
     public function getListenersForEvent(object $event): iterable
     {
         $classes = [$event::class];
@@ -99,15 +100,14 @@ final class ListenerProvider implements ListenerProviderInterface
             $parent = get_parent_class($parent);
         }
 
+        $listeners = [];
         foreach ($classes as $eventClass) {
-            if (!array_key_exists($eventClass, $this->listeners)) {
-                continue;
-            }
-
             foreach ($this->listeners[$eventClass] ?? [] as $listenerPair) {
-                yield $listenerPair[1];
+                $listeners[] = $listenerPair[1];
             }
         }
+
+        return $listeners;
     }
 
     /**
