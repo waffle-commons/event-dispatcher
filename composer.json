@@ -1,6 +1,5 @@
 {
     "name": "waffle-commons/event-dispatcher",
-    "version": "0.1.0-beta0",
     "description": "Event Dispatcher component for Waffle framework.",
     "type": "library",
     "license": "MIT",
