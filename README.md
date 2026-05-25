@@ -9,7 +9,7 @@
 Waffle Event Dispatcher Component
 =================================
 
-> **Release:** `v0.1.0-beta0`
+> **Release:** `v0.1.0-beta1`
 > **PSR Compliance:** PSR-14 (`Psr\EventDispatcher\EventDispatcherInterface`, `ListenerProviderInterface`, `StoppableEventInterface`)
 
 A minimal, attribute-driven PSR-14 dispatcher. The dispatcher itself is `final readonly` and stateless; the listener provider stores the listener map and supports priority ordering and `#[AsEventListener]` attribute discovery.
