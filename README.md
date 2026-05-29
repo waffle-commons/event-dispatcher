@@ -9,7 +9,7 @@
 Waffle Event Dispatcher Component
 =================================
 
-> **Release:** `v0.1.0-beta1`
+> **Release:** `v0.1.0-beta2` &nbsp;|&nbsp; [`CHANGELOG.md`](./CHANGELOG.md)
 > **PSR Compliance:** PSR-14 (`Psr\EventDispatcher\EventDispatcherInterface`, `ListenerProviderInterface`, `StoppableEventInterface`)
 
 A minimal, attribute-driven PSR-14 dispatcher. The dispatcher itself is `final readonly` and stateless; the listener provider stores the listener map and supports priority ordering and `#[AsEventListener]` attribute discovery.
@@ -111,6 +111,21 @@ The dispatcher honours `isPropagationStopped()` and breaks out of the listener l
 - Constructor property promotion with explicit visibility on listeners.
 - Typed properties + parameters throughout.
 - Inheritance walks via native `get_parent_class()` (not reflection caches), so listener resolution against parent event types is `O(depth)` without warm-up cost.
+
+## 🧭 Architectural boundary (`mago guard`)
+
+An active dependency **perimeter** is enforced on every CI run by `vendor/bin/mago guard` (bundled into `composer mago`; zero baselines). The rules live in [`mago.toml`](./mago.toml) under `[guard.perimeter]` — a forbidden `use` statement fails the build, not a reviewer.
+
+Production code under `Waffle\Commons\EventDispatcher` may depend **only** on:
+
+- `Waffle\Commons\EventDispatcher\**` — itself
+- `Waffle\Commons\Contracts\**` — the shared contracts package, the **only** Waffle dependency permitted
+- `Psr\**` — PSR interfaces (PSR-14)
+- `@global` + `Psl\**` — PHP core and the PHP Standard Library
+
+Test code under `WaffleTests\Commons\EventDispatcher` is unrestricted (`@all`). Structural rules are guarded too: interfaces must be named `*Interface`, `Exception\**` classes must end in `*Exception`, and any `Enum\**` namespace may hold only `enum` declarations.
+
+Contract-first, component-agnostic by construction: components compose through `waffle-commons/contracts`, never directly through one another.
 
 ## 🧪 Testing
 
