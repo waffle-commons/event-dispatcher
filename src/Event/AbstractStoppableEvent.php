@@ -6,6 +6,11 @@ namespace Waffle\Commons\EventDispatcher\Event;
 
 use Psr\EventDispatcher\StoppableEventInterface;
 
+/**
+ * Events are per-dispatch value objects (PSR-14): a fresh instance is created
+ * for every dispatch and discarded with the request, so the propagation flag
+ * never survives a FrankenPHP worker iteration — it is not shared service state.
+ */
 abstract class AbstractStoppableEvent implements StoppableEventInterface
 {
     private bool $propagationStopped = false;
@@ -17,6 +22,7 @@ abstract class AbstractStoppableEvent implements StoppableEventInterface
 
     public function stopPropagation(): void
     {
+        // @igor-ignore: per-dispatch event value object — instantiated per dispatch, never a shared service; the PSR-14 StoppableEventInterface contract requires this flag.
         $this->propagationStopped = true;
     }
 }

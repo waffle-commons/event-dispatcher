@@ -7,6 +7,11 @@ namespace Waffle\Commons\EventDispatcher\Provider;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Waffle\Commons\EventDispatcher\Attribute\AsEventListener;
 
+/**
+ * Listener registration is a BOOT-TIME-ONLY operation: the provider is wired once
+ * during kernel assembly and the listener map is never mutated while serving a
+ * request, so the shared instance is safe across FrankenPHP worker iterations.
+ */
 final class ListenerProvider implements ListenerProviderInterface
 {
     /**
@@ -24,10 +29,13 @@ final class ListenerProvider implements ListenerProviderInterface
     public function addListener(string $eventClass, callable $listener, int $priority = 0): void
     {
         if (!array_key_exists($eventClass, $this->listeners)) {
+            // @igor-ignore: boot-time listener registration; the map is never mutated while serving a request.
             $this->listeners[$eventClass] = [];
         }
 
+        // @igor-ignore: boot-time listener registration; the map is never mutated while serving a request.
         $this->listeners[$eventClass][] = [$priority, $listener];
+        // @igor-ignore: boot-time in-place priority sort of the just-registered listener list.
         usort($this->listeners[$eventClass], static fn(array $a, array $b): int => $b[0] <=> $a[0]);
     }
 
