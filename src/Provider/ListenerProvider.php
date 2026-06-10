@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Waffle\Commons\EventDispatcher\Provider;
 
+use IgorPhp\IgorBundle\Attribute\WorkerSafe;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Waffle\Commons\EventDispatcher\Attribute\AsEventListener;
 
@@ -17,6 +18,7 @@ final class ListenerProvider implements ListenerProviderInterface
     /**
      * @var array<string, list<array{0: int, 1: callable}>>
      */
+    #[WorkerSafe(reason: 'boot-time listener registry; never mutated while serving a request')]
     private array $listeners = [];
 
     /**
@@ -29,13 +31,10 @@ final class ListenerProvider implements ListenerProviderInterface
     public function addListener(string $eventClass, callable $listener, int $priority = 0): void
     {
         if (!array_key_exists($eventClass, $this->listeners)) {
-            // @igor-ignore: boot-time listener registration; the map is never mutated while serving a request.
             $this->listeners[$eventClass] = [];
         }
 
-        // @igor-ignore: boot-time listener registration; the map is never mutated while serving a request.
         $this->listeners[$eventClass][] = [$priority, $listener];
-        // @igor-ignore: boot-time in-place priority sort of the just-registered listener list.
         usort($this->listeners[$eventClass], static fn(array $a, array $b): int => $b[0] <=> $a[0]);
     }
 
