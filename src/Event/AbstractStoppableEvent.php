@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Waffle\Commons\EventDispatcher\Event;
 
+use IgorPhp\IgorBundle\Attribute\WorkerSafe;
 use Psr\EventDispatcher\StoppableEventInterface;
 
 /**
@@ -13,6 +14,9 @@ use Psr\EventDispatcher\StoppableEventInterface;
  */
 abstract class AbstractStoppableEvent implements StoppableEventInterface
 {
+    #[WorkerSafe(
+        reason: 'per-dispatch event value object; instantiated per dispatch, never a shared service (PSR-14 StoppableEventInterface)',
+    )]
     private bool $propagationStopped = false;
 
     public function isPropagationStopped(): bool
@@ -22,7 +26,6 @@ abstract class AbstractStoppableEvent implements StoppableEventInterface
 
     public function stopPropagation(): void
     {
-        // @igor-ignore: per-dispatch event value object — instantiated per dispatch, never a shared service; the PSR-14 StoppableEventInterface contract requires this flag.
         $this->propagationStopped = true;
     }
 }
