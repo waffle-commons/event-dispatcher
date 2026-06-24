@@ -97,6 +97,9 @@ final class ListenerProvider implements ListenerProviderInterface
      * @return list<callable>
      */
     #[\Override]
+    // POLICY-05 / inherent: covariance against PSR-14's mago-mangled parent return
+    // type `iterable<mixed,mixed>[(callable…)]` cannot be satisfied by any clean
+    // `list<callable>`/`iterable<callable>`; documented, irreducible scoped ignore.
     // @mago-ignore analysis:incompatible-return-type
     public function getListenersForEvent(object $event): iterable
     {
