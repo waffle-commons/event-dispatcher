@@ -5,6 +5,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Released in lockstep with the Waffle Commons umbrella tag.
 
+## [0.1.0-beta5] — 2026-06-26
+
+**Theme: static-analysis hardening.**
+
+### Changed
+- Enabled the `cyclomatic-complexity` linter rule with a `threshold = 50` ratchet in [`mago.toml`](./mago.toml) (previously disabled), bringing the component under the Beta-5 complexity gate without any baseline.
+- Documented the two PSR-14 scoped Mago ignores (POLICY-05). Mago mis-resolves PSR-14's `@return iterable<callable>` stub into a contradictory `iterable<mixed,mixed>[(callable…)]` type — reported as simultaneously "not iterable" and "not callable" — which no source narrowing can satisfy. `EventDispatcher::dispatch()` and `ListenerProvider::getListenersForEvent()` now carry explanatory comments above their `@mago-ignore` annotations recording these as irreducible, accepted idioms rather than baselines or suppressions.
+
 ## [0.1.0-beta4] — 2026-06-13
 
 ### Changed
