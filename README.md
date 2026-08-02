@@ -134,6 +134,13 @@ Contract-first, component-agnostic by construction: components compose through `
 docker exec -w /waffle-commons/event-dispatcher waffle-dev composer tests
 ```
 
+## 📚 Documentation
+
+Central framework docs live in the [waffle-commons/documentation](https://github.com/waffle-commons/documentation) repository:
+
+- Reference: [event-dispatcher](https://github.com/waffle-commons/documentation/blob/main/reference/event-dispatcher.md)
+- Explanation: [Reactive broadcast](https://github.com/waffle-commons/documentation/blob/main/explanation/reactive-broadcast.md)
+
 ## 📄 License
 
 MIT — see [LICENSE.md](./LICENSE.md).
