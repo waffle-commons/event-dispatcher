@@ -1,6 +1,6 @@
 {
     "name": "waffle-commons/event-dispatcher",
-    "description": "Event Dispatcher component for Waffle framework.",
+    "description": "PSR-14 event dispatching for Waffle Commons: listener providers, stoppable events, and a worker-safe dispatcher wired at boot.",
     "type": "library",
     "license": "MIT",
     "autoload": {
