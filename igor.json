@@ -1,5 +1,12 @@
 {
-    "exclude": ["vendor", "tests", "var"],
-    "safe_namespaces": ["Waffle\\Commons\\Contracts\\"],
+    "exclude": [
+        "vendor",
+        "tests",
+        "var"
+    ],
+    "safe_namespaces": [
+        "Waffle\\Commons\\Contracts\\",
+        "Psr\\"
+    ],
     "verbose": false
 }
